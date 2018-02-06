@@ -16,11 +16,13 @@ describe('Tokeniser', () => {
   })
 
   test('it handles operators', () => {
-    expect(Tokeniser(`=+/%-`)).toEqual([
+    expect(Tokeniser(`=+/%-==-`)).toEqual([
       { type: 'operator', value: '=' },
       { type: 'operator', value: '+' },
       { type: 'operator', value: '/' },
       { type: 'operator', value: '%' },
+      { type: 'operator', value: '-' },
+      { type: 'operator', value: '==' },
       { type: 'operator', value: '-' }
     ])
   })

@@ -71,16 +71,18 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
   // OPERATOR
   if (char === '=') {
     // special case for arrows
-    if (input[current + 1] === '>') {
+    const nextChar = input[current + 1]
+    if (nextChar === '>') {
       return tokenise(current + 2, input, [
         ...tokens,
         { type: 'special', value: '=>' }
       ])
     }
 
-    return tokenise(current + 1, input, [
+    const isDouble = nextChar === '='
+    return tokenise(current + (isDouble ? 2 : 1), input, [
       ...tokens,
-      { type: 'operator', value: '=' }
+      { type: 'operator', value: isDouble ? '==' : '=' }
     ])
   }
   if (char === '+') {
