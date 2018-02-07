@@ -10,8 +10,8 @@ interface NumberNode {
   value: string
 }
 
-interface ExpressionNode {
-  type: 'Expression'
+interface BinaryExpressionNode {
+  type: 'BinaryExpression'
   operator: string
   left: Node
   right: Node
@@ -35,7 +35,7 @@ interface IdentifierNode {
   name: string
 }
 
-interface CallNode {
+interface CallExpressionNode {
   type: 'CallExpression'
   callee: IdentifierNode
   args: IdentifierNode[]
@@ -49,8 +49,8 @@ interface ProgramNode {
 export type Node =
   | StringNode
   | NumberNode
-  | ExpressionNode
-  | CallNode
+  | BinaryExpressionNode
+  | CallExpressionNode
   | FunctionNode
   | IdentifierNode
   | ProgramNode
@@ -84,7 +84,8 @@ export const parseFunction = (
   tokens: Token[]
 ): [number, Node] => {
   let token = tokens[current++]
-  let node: FunctionNode = {
+
+  const node: FunctionNode = {
     type: 'Function',
     name: token.value,
     params: [],
@@ -123,6 +124,37 @@ export const parseFunction = (
   return [current + 1, node]
 }
 
+const parseCallExpression = (
+  current: number,
+  tokens: Token[]
+): [number, Node] => {
+  let token = tokens[current]
+
+  let callee: Node | undefined
+  ;[current, callee] = parseToken(current, tokens)
+  if (!callee) {
+    throw new Error('No call expression callee thing')
+  }
+  const node: CallExpressionNode = {
+    type: 'CallExpression',
+    callee: callee as IdentifierNode,
+    args: []
+  }
+
+  token = tokens[++current]
+
+  let arg
+  while (token.type === 'identifier') {
+    ;[current, arg] = parseToken(current, tokens)
+    if (arg && arg.type === 'Identifier') {
+      node.args.push(arg as any)
+    }
+    token = tokens[current]
+  }
+
+  return [current, node]
+}
+
 const parseString = (current: number, tokens: Token[]): [number, Node] => [
   current + 1,
   {
@@ -139,18 +171,25 @@ const parseNumber = (current: number, tokens: Token[]): [number, Node] => [
   }
 ]
 
-const parseExpression = (current: number, tokens: Token[]): [number, Node] => {
-  const left = parseToken(current, tokens, true)[1]
-  const operator = tokens[current + 1].value
-  const right = parseToken(current + 2, tokens)[1]
+const parseBinaryExpression = (
+  current: number,
+  tokens: Token[]
+): [number, Node] => {
+  let left
+  ;[current, left] = parseToken(current, tokens, true)
+
+  const operator = tokens[current++].value
+
+  let right
+  ;[current, right] = parseToken(current, tokens)
 
   if (!left || !right) {
     throw new Error('Expression Error')
   }
   return [
-    current + 3,
+    current,
     {
-      type: 'Expression',
+      type: 'BinaryExpression',
       operator,
       left,
       right
@@ -171,7 +210,6 @@ const parseVariable = (current: number, tokens: Token[]): [number, Node] => {
   ;[current, body] = parseToken(current + 1, tokens)
 
   if (!body || !identifier) {
-    console.log(body, identifier)
     throw new Error('Problem in variable declaration')
   }
   return [
@@ -193,17 +231,20 @@ const parseToken = (
   const next = tokens[current + 1]
 
   if (!skipNext && next && next.type === 'operator' && next.value !== '=') {
-    return parseExpression(current, tokens)
+    return parseBinaryExpression(current, tokens)
   }
+
   if (token.type === 'string') {
     return parseString(current, tokens)
   }
+
   if (token.type === 'number') {
     return parseNumber(current, tokens)
   }
 
   if (token.type === 'identifier') {
     if (next.type === 'identifier') {
+      // Do something here about parsing callExpression
       return parseFunction(current, tokens)
     }
     if (next.type === 'operator' && next.value === '=') {
