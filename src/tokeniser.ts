@@ -16,6 +16,10 @@ const keywords = ['this', 'case', 'of']
 export default (input: string) => tokenise(0, input + '\n', [])
 
 const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
+  const lookBehind = () => input[current + 1]
+  const lookAhead = () => input[current + 1]
+  const next = () => (char = input[++current])
+
   if (current === input.length) {
     return tokens
   }
@@ -40,7 +44,7 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
     let number = ''
     while (/[0-9]/.test(char)) {
       number += char
-      char = input[++current]
+      next()
     }
 
     return tokenise(current, input, [
@@ -53,14 +57,14 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
   if (char === `"`) {
     let string = ''
 
-    char = input[++current]
+    next()
 
     while (char !== '"') {
       string += char
-      char = input[++current]
+      next()
     }
 
-    char = input[++current]
+    next()
 
     return tokenise(current + 1, input, [
       ...tokens,
@@ -71,15 +75,15 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
   // OPERATOR
   if (char === '=') {
     // special case for arrows
-    const nextChar = input[current + 1]
-    if (nextChar === '>') {
+
+    if (lookAhead() === '>') {
       return tokenise(current + 2, input, [
         ...tokens,
         { type: 'special', value: '=>' }
       ])
     }
 
-    const isDouble = nextChar === '='
+    const isDouble = lookAhead() === '='
     return tokenise(current + (isDouble ? 2 : 1), input, [
       ...tokens,
       { type: 'operator', value: isDouble ? '==' : '=' }
@@ -121,7 +125,7 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
     let name = ''
     while (/[a-z]/i.test(char)) {
       name += char
-      char = input[++current]
+      next()
     }
 
     if (keywords.includes(name)) {
