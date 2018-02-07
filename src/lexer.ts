@@ -1,47 +1,47 @@
 import { Token } from './tokeniser'
 
-interface StringNode {
+export interface StringNode {
   type: 'StringLiteral'
   value: string
 }
 
-interface NumberNode {
+export interface NumberNode {
   type: 'NumberLiteral'
   value: string
 }
 
-interface BinaryExpressionNode {
+export interface BinaryExpressionNode {
   type: 'BinaryExpression'
   operator: string
   left: Node
   right: Node
 }
 
-interface FunctionNode {
+export interface FunctionNode {
   type: 'Function'
   name: string
   params: IdentifierNode[]
   body: Node[]
 }
 
-interface VariableNode {
+export interface VariableNode {
   type: 'Variable'
   identifier: IdentifierNode
   body: Node
 }
 
-interface IdentifierNode {
+export interface IdentifierNode {
   type: 'Identifier'
   name: string
 }
 
-interface CallExpressionNode {
+export interface CallExpressionNode {
   type: 'CallExpression'
   callee: IdentifierNode
   args: IdentifierNode[]
 }
 
-interface ProgramNode {
+export interface ProgramNode {
   type: 'Program'
   body: Node[]
 }

@@ -1,16 +1,31 @@
-import { AST, Node } from './Lexer'
+import { AST, Node, FunctionNode } from './Lexer'
+
+const generateFunction = (node: FunctionNode) => {
+  const lastExpression = node.body[node.body.length - 1]
+  node.body.pop()
+
+  let string =
+    'const ' +
+    node.name +
+    ' = ' +
+    node.params.map(generator).join(' => ') +
+    ' => {\n'
+
+  if (node.body.length) {
+    string += '\t' + node.body.map(generator).join('\n') + '\n'
+  }
+
+  string += '\treturn ' + generator(lastExpression) + '\n}'
+
+  return string
+}
 const generator = (node: Node): string => {
   if (node.type === 'Program') {
     return node.body.map(generator).join('\n')
   }
 
   if (node.type === 'Function') {
-    const returnValue = node.body[node.body.length - 1]
-    node.body.pop()
-    return `function ${node.name}(${node.params.map(generator).join(', ')}) {
-  ${node.body.map(generator)}
-  return ${generator(returnValue)}
-}`
+    return generateFunction(node)
   }
 
   if (node.type === 'Identifier') {
