@@ -25,8 +25,10 @@ const generator = (node: Node): string => {
     return node.value
   }
 
-  if (node.type === 'Expression') {
-    return generator(node.left) + node.operator + generator(node.right)
+  if (node.type === 'BinaryExpression') {
+    return (
+      generator(node.left) + ' ' + node.operator + ' ' + generator(node.right)
+    )
   }
 
   if (node.type === 'Variable') {
