@@ -13,9 +13,23 @@ export interface Token {
 
 const keywords = ['this', 'case', 'of']
 
-export default (input: string) => tokenise(0, input + '\n', [])
+export default (input: string) => trampoline(tokenise)(0, input + '\n', [])
 
-const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
+function trampoline(this: any, fn: any): any {
+  return function() {
+    var res = fn.apply(this, arguments)
+    while (res instanceof Function) {
+      res = res()
+    }
+    return res
+  }
+}
+
+const tokenise = (
+  current: number,
+  input: string,
+  tokens: Token[]
+): Token[] | (() => Token[]) => {
   const lookBehind = () => input[current + 1]
   const lookAhead = () => input[current + 1]
   const next = () => (char = input[++current])
@@ -28,15 +42,16 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
 
   // WHITESPACE
   if (/\s/.test(char)) {
-    return tokenise(current + 1, input, tokens)
+    return () => tokenise(current + 1, input, tokens)
   }
 
   // SPECIAL
   if (/[()[\]{}]/g.test(char)) {
-    return tokenise(current + 1, input, [
-      ...tokens,
-      { type: 'special', value: char }
-    ])
+    return () =>
+      tokenise(current + 1, input, [
+        ...tokens,
+        { type: 'special', value: char }
+      ])
   }
 
   // NUMBERS
@@ -47,10 +62,8 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
       next()
     }
 
-    return tokenise(current, input, [
-      ...tokens,
-      { type: 'number', value: number }
-    ])
+    return () =>
+      tokenise(current, input, [...tokens, { type: 'number', value: number }])
   }
 
   // STRING
@@ -66,10 +79,11 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
 
     next()
 
-    return tokenise(current + 1, input, [
-      ...tokens,
-      { type: 'string', value: string }
-    ])
+    return () =>
+      tokenise(current + 1, input, [
+        ...tokens,
+        { type: 'string', value: string }
+      ])
   }
 
   // OPERATOR
@@ -84,40 +98,46 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
     }
 
     const isDouble = lookAhead() === '='
-    return tokenise(current + (isDouble ? 2 : 1), input, [
-      ...tokens,
-      { type: 'operator', value: isDouble ? '==' : '=' }
-    ])
+    return () =>
+      tokenise(current + (isDouble ? 2 : 1), input, [
+        ...tokens,
+        { type: 'operator', value: isDouble ? '==' : '=' }
+      ])
   }
   if (char === '+') {
-    return tokenise(current + 1, input, [
-      ...tokens,
-      { type: 'operator', value: '+' }
-    ])
+    return () =>
+      tokenise(current + 1, input, [
+        ...tokens,
+        { type: 'operator', value: '+' }
+      ])
   }
   if (char === '-') {
-    return tokenise(current + 1, input, [
-      ...tokens,
-      { type: 'operator', value: '-' }
-    ])
+    return () =>
+      tokenise(current + 1, input, [
+        ...tokens,
+        { type: 'operator', value: '-' }
+      ])
   }
   if (char === '%') {
-    return tokenise(current + 1, input, [
-      ...tokens,
-      { type: 'operator', value: '%' }
-    ])
+    return () =>
+      tokenise(current + 1, input, [
+        ...tokens,
+        { type: 'operator', value: '%' }
+      ])
   }
   if (char === '*') {
-    return tokenise(current + 1, input, [
-      ...tokens,
-      { type: 'operator', value: '*' }
-    ])
+    return () =>
+      tokenise(current + 1, input, [
+        ...tokens,
+        { type: 'operator', value: '*' }
+      ])
   }
   if (char === '/') {
-    return tokenise(current + 1, input, [
-      ...tokens,
-      { type: 'operator', value: '/' }
-    ])
+    return () =>
+      tokenise(current + 1, input, [
+        ...tokens,
+        { type: 'operator', value: '/' }
+      ])
   }
 
   // IDENTIFIER
@@ -129,16 +149,12 @@ const tokenise = (current: number, input: string, tokens: Token[]): Token[] => {
     }
 
     if (keywords.includes(name)) {
-      return tokenise(current, input, [
-        ...tokens,
-        { type: 'keyword', value: name }
-      ])
+      return () =>
+        tokenise(current, input, [...tokens, { type: 'keyword', value: name }])
     }
 
-    return tokenise(current, input, [
-      ...tokens,
-      { type: 'identifier', value: name }
-    ])
+    return () =>
+      tokenise(current, input, [...tokens, { type: 'identifier', value: name }])
   }
 
   throw new TypeError('Unknown character: ' + char)
