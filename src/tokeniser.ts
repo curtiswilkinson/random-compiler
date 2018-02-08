@@ -16,7 +16,7 @@ const keywords = ['this', 'case', 'of']
 export default (input: string) => trampoline(tokenise)(0, input + '\n', [])
 
 function trampoline(this: any, fn: any): any {
-  return function() {
+  return function(this: any) {
     var res = fn.apply(this, arguments)
     while (res instanceof Function) {
       res = res()
@@ -25,11 +25,13 @@ function trampoline(this: any, fn: any): any {
   }
 }
 
+type TokenThunk = (() => Token[] | Token)
+
 const tokenise = (
   current: number,
   input: string,
   tokens: Token[]
-): Token[] | (() => Token[]) => {
+): Token[] | any => {
   const lookBehind = () => input[current + 1]
   const lookAhead = () => input[current + 1]
   const next = () => (char = input[++current])
