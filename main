@@ -1,4 +1,6 @@
 main x y => {
-    z = x * 2
-    y + z
+  z = x * 2
+  y + z
 }
+
+main 1 2

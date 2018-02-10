@@ -1,4 +1,4 @@
-import { AST, Node, FunctionNode } from './Lexer'
+import { AST, Node, FunctionNode, CallExpressionNode } from './Lexer'
 
 const generateFunction = (node: FunctionNode) => {
   const lastExpression = node.body[node.body.length - 1]
@@ -19,6 +19,17 @@ const generateFunction = (node: FunctionNode) => {
 
   return string
 }
+
+const generateCallExpression = (node: CallExpressionNode) => {
+  return (
+    node.callee.name +
+    node.args
+      .map(generator)
+      .map(x => '(' + x + ')')
+      .join('')
+  )
+}
+
 const generator = (node: Node): string => {
   if (node.type === 'Program') {
     return node.body.map(generator).join('\n')
@@ -44,6 +55,10 @@ const generator = (node: Node): string => {
     return (
       generator(node.left) + ' ' + node.operator + ' ' + generator(node.right)
     )
+  }
+
+  if (node.type === 'CallExpression') {
+    return generateCallExpression(node)
   }
 
   if (node.type === 'Variable') {

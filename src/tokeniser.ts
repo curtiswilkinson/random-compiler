@@ -5,6 +5,7 @@ type TokenType =
   | 'identifier'
   | 'operator'
   | 'keyword'
+  | 'whitespace'
 
 export interface Token {
   type: TokenType
@@ -27,6 +28,7 @@ function trampoline(this: any, fn: any): any {
 
 type TokenThunk = (() => Token[] | Token)
 
+let indent = 0
 const tokenise = (
   current: number,
   input: string,
@@ -43,6 +45,35 @@ const tokenise = (
   let char = input[current]
 
   // WHITESPACE
+  if (char === '\n') {
+    let newIndent = 0
+    while (/\s/.test(char)) {
+      if (char === '\n') {
+        newIndent = 0
+      } else {
+        ++newIndent
+      }
+      next()
+    }
+
+    if (!lookAhead()) {
+      return tokens
+    }
+
+    let value = 'SAMEDENT'
+    if (newIndent > indent) {
+      value = 'INDENT'
+    }
+
+    if (newIndent < indent) {
+      value = 'DEDENT'
+    }
+
+    indent = newIndent
+    return () =>
+      tokenise(current, input, [...tokens, { type: 'whitespace', value }])
+  }
+
   if (/\s/.test(char)) {
     return () => tokenise(current + 1, input, tokens)
   }

@@ -100,10 +100,10 @@ export const parseFunction = (
     token = tokens[current++]
   }
 
-  // HACK, this needs to be fixed pretty badly lol
-  // Skip the => and {
-
   if (token.value !== '=>' || tokens[current].value !== '{') {
+    // HACK, this needs to be fixed pretty badly lol
+    // Skip the => and {
+
     throw new Error('Improper function syntax')
   }
 
@@ -129,9 +129,10 @@ const parseCallExpression = (
   tokens: Token[]
 ): [number, Node] => {
   let token = tokens[current]
+  let next = tokens[current + 1]
 
   let callee: Node | undefined
-  ;[current, callee] = parseToken(current, tokens)
+  ;[current, callee] = parseIdentifier(current, tokens)
   if (!callee) {
     throw new Error('No call expression callee thing')
   }
@@ -141,12 +142,15 @@ const parseCallExpression = (
     args: []
   }
 
-  token = tokens[++current]
-
   let arg
-  while (token.type === 'identifier') {
+  while (
+    token &&
+    next &&
+    token.type !== 'DEDENT' &&
+    token.type !== 'SAMEDENT'
+  ) {
     ;[current, arg] = parseToken(current, tokens)
-    if (arg && arg.type === 'Identifier') {
+    if (arg) {
       node.args.push(arg as any)
     }
     token = tokens[current]
@@ -155,7 +159,10 @@ const parseCallExpression = (
   return [current, node]
 }
 
-const parseString = (current: number, tokens: Token[]): [number, Node] => [
+export const parseString = (
+  current: number,
+  tokens: Token[]
+): [number, Node] => [
   current + 1,
   {
     type: 'StringLiteral',
@@ -163,7 +170,10 @@ const parseString = (current: number, tokens: Token[]): [number, Node] => [
   }
 ]
 
-const parseNumber = (current: number, tokens: Token[]): [number, Node] => [
+export const parseNumber = (
+  current: number,
+  tokens: Token[]
+): [number, Node] => [
   current + 1,
   {
     type: 'NumberLiteral',
@@ -171,7 +181,7 @@ const parseNumber = (current: number, tokens: Token[]): [number, Node] => [
   }
 ]
 
-const parseBinaryExpression = (
+export const parseBinaryExpression = (
   current: number,
   tokens: Token[]
 ): [number, Node] => {
@@ -184,6 +194,7 @@ const parseBinaryExpression = (
   ;[current, right] = parseToken(current, tokens)
 
   if (!left || !right) {
+    console.log(left, right, operator)
     throw new Error('Expression Error')
   }
   return [
@@ -243,9 +254,30 @@ const parseToken = (
   }
 
   if (token.type === 'identifier') {
-    if (next.type === 'identifier') {
-      // Do something here about parsing callExpression
-      return parseFunction(current, tokens)
+    if (
+      next.type === 'identifier' ||
+      next.type === 'number' ||
+      next.type === 'string'
+    ) {
+      let newToken = tokens[current]
+      let definition = false
+      let iter = current
+
+      while (
+        newToken &&
+        newToken.value !== 'SAMEDENT' &&
+        newToken.value !== 'DEDENT'
+      ) {
+        if (tokens[iter + 1] && tokens[iter + 1].value === '=>') {
+          definition = true
+        }
+        newToken = tokens[++iter]
+      }
+      if (definition) {
+        return parseFunction(current, tokens)
+      } else {
+        return parseCallExpression(current, tokens)
+      }
     }
     if (next.type === 'operator' && next.value === '=') {
       return parseVariable(current, tokens)
@@ -254,8 +286,12 @@ const parseToken = (
     return parseIdentifier(current, tokens)
   }
 
-  if (token.type === 'special' || token.type === 'operator') {
-    return [current, undefined]
+  if (
+    token.type === 'special' ||
+    token.type === 'operator' ||
+    token.type === 'whitespace'
+  ) {
+    return [current + 1, undefined]
   }
 
   throw new Error('Fucked up' + JSON.stringify(token))

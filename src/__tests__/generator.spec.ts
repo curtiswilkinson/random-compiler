@@ -10,6 +10,5 @@ describe('Code generator', () => {
     main x y => { x+1 }`)
       )
     )
-    console.log(result)
   })
 })
