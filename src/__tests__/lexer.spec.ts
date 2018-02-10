@@ -73,21 +73,62 @@ describe.only('Lexec', () => {
   })
 
   test('it parses a function definition and invocation', () => {
-    // expect(
-    //   Lexer([
-    //     { type: 'identifier', value: 'main' },
-    //     { type: 'identifier', value: 'x' },
-    //     { type: 'special', value: '=>' },
-    //     { type: 'special', value: '{' },
-    //     { type: 'whitespace', value: 'INDENT' },
-    //     { type: 'identifier', value: 'x' },
-    //     { type: 'operator', value: '+' },
-    //     { type: 'identifier', value: 'y' },
-    //     { type: 'whitespace', value: 'DEDENT' },
-    //     { type: 'special', value: '}' },
-    //     { type: 'identifier', value: 'main' },
-    //     { type: 'number', value: '1' }
-    //   ])
-    // ).toEqual({})
+    expect(
+      Lexer([
+        { type: 'identifier', value: 'main' },
+        { type: 'identifier', value: 'x' },
+        { type: 'special', value: '=>' },
+        { type: 'special', value: '{' },
+        { type: 'whitespace', value: 'INDENT' },
+        { type: 'identifier', value: 'x' },
+        { type: 'operator', value: '+' },
+        { type: 'identifier', value: 'y' },
+        { type: 'whitespace', value: 'DEDENT' },
+        { type: 'special', value: '}' },
+        { type: 'identifier', value: 'main' },
+        { type: 'number', value: '1' }
+      ])
+    ).toEqual({
+      type: 'Program',
+      body: [
+        {
+          type: 'Function',
+          name: 'main',
+          params: [
+            {
+              type: 'Identifier',
+              name: 'x'
+            }
+          ],
+          body: [
+            {
+              type: 'BinaryExpression',
+              operator: '+',
+              left: {
+                type: 'Identifier',
+                name: 'x'
+              },
+              right: {
+                type: 'Identifier',
+                name: 'y'
+              }
+            }
+          ]
+        },
+        {
+          type: 'CallExpression',
+          callee: {
+            type: 'Identifier',
+            name: 'main'
+          },
+          args: [
+            {
+              type: 'NumberLiteral',
+              value: '1'
+            }
+          ]
+        }
+      ]
+    })
   })
 })

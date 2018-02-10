@@ -138,7 +138,7 @@ const parseCallExpression = (
   }
   const node: CallExpressionNode = {
     type: 'CallExpression',
-    callee: callee as IdentifierNode,
+    callee: callee,
     args: []
   }
 
@@ -194,7 +194,6 @@ export const parseBinaryExpression = (
   ;[current, right] = parseToken(current, tokens)
 
   if (!left || !right) {
-    console.log(left, right, operator)
     throw new Error('Expression Error')
   }
   return [
