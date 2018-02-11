@@ -27,14 +27,15 @@ describe('Tokeniser', () => {
   })
 
   test('it tokenises operators', () => {
-    expect(Tokeniser(`==+-/*=%`)).toEqual([
+    expect(Tokeniser(`==+-/*=%++`)).toEqual([
       { type: 'operator', value: '==' },
       { type: 'operator', value: '+' },
       { type: 'operator', value: '-' },
       { type: 'operator', value: '/' },
       { type: 'operator', value: '*' },
       { type: 'operator', value: '=' },
-      { type: 'operator', value: '%' }
+      { type: 'operator', value: '%' },
+      { type: 'operator', value: '++' }
     ])
   })
   test('it tokenises strings', () => {
@@ -50,6 +51,11 @@ describe('Tokeniser', () => {
       { type: 'keyword', value: 'case' },
       { type: 'identifier', value: 'x' },
       { type: 'keyword', value: 'of' }
+    ])
+    expect(Tokeniser(`Number -> String`)).toEqual([
+      { type: 'keyword', value: 'Number' },
+      { type: 'special', value: '->' },
+      { type: 'keyword', value: 'String' }
     ])
   })
 

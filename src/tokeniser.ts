@@ -14,11 +14,16 @@ export interface Token {
 
 const keywords = ['this', 'case', 'of', 'Number', 'String', 'Bool']
 
-export default (input: string) => trampoline(tokenise)(0, input + '\n', [])
+let indent = 0
+
+export default (input: string) => {
+  indent = 0
+  return trampoline(tokenise)(0, input + '\n', [])
+}
 
 function trampoline(this: any, fn: any): any {
   return function(this: any) {
-    var res = fn.apply(this, arguments)
+    let res = fn.apply(this, arguments)
     while (res instanceof Function) {
       res = res()
     }
@@ -26,9 +31,6 @@ function trampoline(this: any, fn: any): any {
   }
 }
 
-type TokenThunk = (() => Token[] | Token)
-
-let indent = 0
 const tokenise = (
   current: number,
   input: string,
@@ -46,6 +48,7 @@ const tokenise = (
 
   // WHITESPACE
   if (char === '\n') {
+    // Calculates the level of identation for the newline
     let newIndent = 0
     while (/\s/.test(char)) {
       if (char === '\n') {
@@ -60,6 +63,10 @@ const tokenise = (
       return tokens
     }
 
+    // Basically a signifier around:
+    // a) Same indentation as before
+    // b) More indented
+    // c) Less indented
     let value = 'SAMEDENT'
     if (newIndent > indent) {
       value = 'INDENT'
@@ -74,12 +81,14 @@ const tokenise = (
       tokenise(current, input, [...tokens, { type: 'whitespace', value }])
   }
 
+  // Skip over generalised whipespace
   if (/\s/.test(char)) {
     return () => tokenise(current + 1, input, tokens)
   }
 
   // SPECIAL
   if (char === ':') {
+    // For the :: operator
     if (lookAhead() === ':') {
       return () =>
         tokenise(current + 2, input, [
@@ -94,6 +103,7 @@ const tokenise = (
         { type: 'special', value: char }
       ])
   }
+
   if (/[()[\]{}]/g.test(char)) {
     return () =>
       tokenise(current + 1, input, [
@@ -137,7 +147,6 @@ const tokenise = (
   // OPERATOR
   if (char === '=') {
     // special case for arrows
-
     if (lookAhead() === '>') {
       return tokenise(current + 2, input, [
         ...tokens,
@@ -145,6 +154,7 @@ const tokenise = (
       ])
     }
 
+    // Case for =(assignment) vs == (equivalence)
     const isDouble = lookAhead() === '='
     return () =>
       tokenise(current + (isDouble ? 2 : 1), input, [
@@ -152,7 +162,20 @@ const tokenise = (
         { type: 'operator', value: isDouble ? '==' : '=' }
       ])
   }
+
   if (char === '+') {
+    // Special case for string concat ++
+    if (lookAhead() === '+') {
+      return () =>
+        tokenise(current + 2, input, [
+          ...tokens,
+          {
+            type: 'operator',
+            value: '++'
+          }
+        ])
+    }
+
     return () =>
       tokenise(current + 1, input, [
         ...tokens,
@@ -169,12 +192,14 @@ const tokenise = (
           { type: 'special', value: '->' }
         ])
     }
+
     return () =>
       tokenise(current + 1, input, [
         ...tokens,
         { type: 'operator', value: '-' }
       ])
   }
+
   if (char === '%') {
     return () =>
       tokenise(current + 1, input, [
@@ -182,6 +207,7 @@ const tokenise = (
         { type: 'operator', value: '%' }
       ])
   }
+
   if (char === '*') {
     return () =>
       tokenise(current + 1, input, [
@@ -189,6 +215,7 @@ const tokenise = (
         { type: 'operator', value: '*' }
       ])
   }
+
   if (char === '/') {
     return () =>
       tokenise(current + 1, input, [
@@ -205,6 +232,7 @@ const tokenise = (
       next()
     }
 
+    // keywords
     if (keywords.includes(name)) {
       return () =>
         tokenise(current, input, [...tokens, { type: 'keyword', value: name }])

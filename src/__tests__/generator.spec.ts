@@ -8,12 +8,12 @@ describe('Code generator', () => {
       Generator(
         Lexer(
           Tokeniser(
-            `test = 1 + 1 - "test"\nmain x y => { \n\t"text"\n}\nmain 1 2`
+            `test = 1 + 1 - "test"\nmain x y => { \n\t"text"++"whatever"\n}\nmain 1 2`
           )
         )
       )
     ).toEqual(
-      'var test = 1 + 1 - "test"\nconst main = x => y => {\n\treturn "text"\n}\nmain(1)(2)'
+      'var test = 1 + 1 - "test"\nconst main = x => y => {\n\treturn "text" + "whatever"\n}\nmain(1)(2)'
     )
   })
 })

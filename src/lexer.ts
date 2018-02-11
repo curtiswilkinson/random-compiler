@@ -136,18 +136,18 @@ const parseCallExpression = (
   if (!callee) {
     throw new Error('No call expression callee thing')
   }
-  const node: CallExpressionNode = {
+  const node = {
     type: 'CallExpression',
     callee: callee,
     args: []
-  }
+  } as CallExpressionNode
 
   let arg
   while (
     token &&
     next &&
-    token.type !== 'DEDENT' &&
-    token.type !== 'SAMEDENT'
+    token.value !== 'DEDENT' &&
+    token.value !== 'SAMEDENT'
   ) {
     ;[current, arg] = parseToken(current, tokens)
     if (arg) {
@@ -211,11 +211,6 @@ const parseIdentifier = (current: number, tokens: Token[]): [number, Node] => [
   current + 1,
   { type: 'Identifier', name: tokens[current].value }
 ]
-
-const parseTypeDefition = (
-  current: number,
-  tokens: Token[]
-): [number, Node] => {}
 
 const parseVariable = (current: number, tokens: Token[]): [number, Node] => {
   let identifier
@@ -286,9 +281,7 @@ const parseToken = (
     if (next.type === 'operator' && next.value === '=') {
       return parseVariable(current, tokens)
     }
-    if (next.type === 'special' && next.value === '::') {
-      return parseTypeDefition(current, tokens)
-    }
+
     return parseIdentifier(current, tokens)
   }
 

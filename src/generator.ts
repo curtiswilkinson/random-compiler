@@ -20,6 +20,14 @@ const generateFunction = (node: FunctionNode) => {
   return string
 }
 
+const parseOperator = (operator: string): string => {
+  if (operator === '++') {
+    return '+'
+  }
+
+  return operator
+}
+
 const generateCallExpression = (node: CallExpressionNode) => {
   return (
     node.callee.name +
@@ -53,7 +61,11 @@ const generator = (node: Node): string => {
 
   if (node.type === 'BinaryExpression') {
     return (
-      generator(node.left) + ' ' + node.operator + ' ' + generator(node.right)
+      generator(node.left) +
+      ' ' +
+      parseOperator(node.operator) +
+      ' ' +
+      generator(node.right)
     )
   }
 

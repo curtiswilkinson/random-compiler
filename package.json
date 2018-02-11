@@ -1,28 +1,28 @@
 {
+  "name": "ardent",
+  "version": "0.1.0",
+  "scripts": {
+    "name": "ardent",
+    "test": "jest --watchAll",
+    "compile:mock": "cd ./mock && ts-node ../src/index.ts"
+  },
   "devDependencies": {
-    "@types/jest": "^22.1.1",
+    "@types/jest": "^22.1.2",
     "@types/mz": "^0.0.32",
     "@types/node": "^9.4.0",
     "jest": "^22.1.4",
+    "ts-jest": "^22.0.3",
+    "ts-node": "^4.1.0",
     "typescript": "^2.7.1"
   },
   "jest": {
     "collectCoverage": true,
-    "collectCoverageFrom": [
-      "!src/{text|console|index}.ts",
-      "src/**/*.ts"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
+    "collectCoverageFrom": ["!src/{text|console|index}.ts", "src/**/*.ts"],
+    "moduleFileExtensions": ["ts", "tsx", "js"],
     "transform": {
-      "^.+\\.(ts|tsx)$": "<rootDir>/jest/typescript.js"
+      "^.+\\.tsx?$": "ts-jest"
     },
-    "testMatch": [
-      "**/src/**/*.spec.(ts|tsx|js)"
-    ]
+    "testMatch": ["**/src/**/*.spec.(ts|tsx|js)"]
   },
   "dependencies": {
     "glob-fs": "^0.1.7",

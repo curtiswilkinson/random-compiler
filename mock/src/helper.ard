@@ -1,3 +1,5 @@
 format x y => {
     x / y
 }
+
+format 12 15
