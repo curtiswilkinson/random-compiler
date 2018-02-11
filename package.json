@@ -4,12 +4,15 @@
   "scripts": {
     "name": "ardent",
     "test": "jest --watchAll",
+    "benchmark": "ts-node ./src/benchmark",
     "compile:mock": "cd ./mock && ts-node ../src/index.ts"
   },
   "devDependencies": {
+    "@types/benchmark": "^1.0.31",
     "@types/jest": "^22.1.2",
     "@types/mz": "^0.0.32",
     "@types/node": "^9.4.0",
+    "benchmark": "^2.1.4",
     "jest": "^22.1.4",
     "ts-jest": "^22.0.3",
     "ts-node": "^4.1.0",
@@ -17,7 +20,10 @@
   },
   "jest": {
     "collectCoverage": true,
-    "collectCoverageFrom": ["!src/{text|console|index}.ts", "src/**/*.ts"],
+    "collectCoverageFrom": [
+      "!src/{text|console|index|benchmark}.ts",
+      "src/**/*.ts"
+    ],
     "moduleFileExtensions": ["ts", "tsx", "js"],
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
