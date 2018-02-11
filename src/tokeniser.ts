@@ -12,7 +12,7 @@ export interface Token {
   value: string
 }
 
-const keywords = ['this', 'case', 'of']
+const keywords = ['this', 'case', 'of', 'Number', 'String', 'Bool']
 
 export default (input: string) => trampoline(tokenise)(0, input + '\n', [])
 
@@ -79,6 +79,21 @@ const tokenise = (
   }
 
   // SPECIAL
+  if (char === ':') {
+    if (lookAhead() === ':') {
+      return () =>
+        tokenise(current + 2, input, [
+          ...tokens,
+          { type: 'special', value: '::' }
+        ])
+    }
+
+    return () =>
+      tokenise(current + 1, input, [
+        ...tokens,
+        { type: 'special', value: char }
+      ])
+  }
   if (/[()[\]{}]/g.test(char)) {
     return () =>
       tokenise(current + 1, input, [
@@ -144,7 +159,16 @@ const tokenise = (
         { type: 'operator', value: '+' }
       ])
   }
+
+  // Special case for skinny arrow
   if (char === '-') {
+    if (lookAhead() === '>') {
+      return () =>
+        tokenise(current + 2, input, [
+          ...tokens,
+          { type: 'special', value: '->' }
+        ])
+    }
     return () =>
       tokenise(current + 1, input, [
         ...tokens,

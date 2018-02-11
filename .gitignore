@@ -1,5 +1,5 @@
 node_modules
 coverage
-main.js
+*.ard.js
 token
 AST

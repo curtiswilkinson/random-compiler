@@ -212,6 +212,11 @@ const parseIdentifier = (current: number, tokens: Token[]): [number, Node] => [
   { type: 'Identifier', name: tokens[current].value }
 ]
 
+const parseTypeDefition = (
+  current: number,
+  tokens: Token[]
+): [number, Node] => {}
+
 const parseVariable = (current: number, tokens: Token[]): [number, Node] => {
   let identifier
   ;[current, identifier] = parseIdentifier(current, tokens)
@@ -281,14 +286,17 @@ const parseToken = (
     if (next.type === 'operator' && next.value === '=') {
       return parseVariable(current, tokens)
     }
-
+    if (next.type === 'special' && next.value === '::') {
+      return parseTypeDefition(current, tokens)
+    }
     return parseIdentifier(current, tokens)
   }
 
   if (
     token.type === 'special' ||
     token.type === 'operator' ||
-    token.type === 'whitespace'
+    token.type === 'whitespace' ||
+    token.type === 'keyword'
   ) {
     return [current + 1, undefined]
   }

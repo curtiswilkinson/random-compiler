@@ -1,17 +1,31 @@
 {
   "devDependencies": {
     "@types/jest": "^22.1.1",
+    "@types/mz": "^0.0.32",
     "@types/node": "^9.4.0",
     "jest": "^22.1.4",
     "typescript": "^2.7.1"
   },
   "jest": {
     "collectCoverage": true,
-    "collectCoverageFrom": ["!src/{text|console|index}.ts", "src/**/*.ts"],
-    "moduleFileExtensions": ["ts", "tsx", "js"],
+    "collectCoverageFrom": [
+      "!src/{text|console|index}.ts",
+      "src/**/*.ts"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
     "transform": {
       "^.+\\.(ts|tsx)$": "<rootDir>/jest/typescript.js"
     },
-    "testMatch": ["**/src/**/*.spec.(ts|tsx|js)"]
+    "testMatch": [
+      "**/src/**/*.spec.(ts|tsx|js)"
+    ]
+  },
+  "dependencies": {
+    "glob-fs": "^0.1.7",
+    "mz": "^2.7.0"
   }
 }
